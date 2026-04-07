@@ -1,7 +1,9 @@
+import { hasRequiredAuthEnv } from "@/auth";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Navbar } from "@/components/ui/Navbar";
 import { StatCard } from "@/components/ui/StatCard";
+import { DEMO_PUBLIC_SLUG } from "@/lib/public/profiles";
 
 const featureSteps = [
   {
@@ -34,6 +36,8 @@ const languagePreview = [
 ];
 
 export default function Home() {
+  const authReady = hasRequiredAuthEnv();
+
   return (
     <div className="relative min-h-screen overflow-x-clip">
       <Navbar />
@@ -59,8 +63,22 @@ export default function Home() {
             </div>
 
             <div className="animate-fade-in-up delay-200 flex flex-wrap items-center gap-3">
-              <Button href="/api/auth/signin" size="lg">
-                Connect GitHub
+              {authReady ? (
+                <Button href="/api/auth/signin?callbackUrl=%2Fdashboard" size="lg">
+                  Connect GitHub
+                </Button>
+              ) : (
+                <Button
+                  type="button"
+                  size="lg"
+                  disabled
+                  title="Set AUTH_GITHUB_ID, AUTH_GITHUB_SECRET, and AUTH_SECRET in .env.local"
+                >
+                  Configure Auth Keys
+                </Button>
+              )}
+              <Button href={`/${DEMO_PUBLIC_SLUG}`} variant="ghost" size="lg">
+                Recruiter Demo
               </Button>
               <Button href="#features" variant="secondary" size="lg">
                 Explore Features

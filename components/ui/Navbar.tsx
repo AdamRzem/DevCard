@@ -3,10 +3,12 @@ import Link from "next/link";
 
 import { auth, hasRequiredAuthEnv, signIn, signOut } from "@/auth";
 import { Button } from "@/components/ui/Button";
+import { DEMO_PUBLIC_SLUG } from "@/lib/public/profiles";
 
 const navLinks = [
-  { href: "#features", label: "Features" },
-  { href: "#how-it-works", label: "How It Works" },
+  { href: `/${DEMO_PUBLIC_SLUG}`, label: "Recruiter View" },
+  { href: "/#features", label: "Features" },
+  { href: "/#how-it-works", label: "How It Works" },
 ];
 
 async function signInWithGitHub() {
@@ -18,7 +20,7 @@ async function signInWithGitHub() {
     );
   }
 
-  await signIn("github", { redirectTo: "/" });
+  await signIn("github", { redirectTo: "/dashboard" });
 }
 
 async function signOutUser() {
