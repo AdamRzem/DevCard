@@ -3,6 +3,10 @@
 import { useEffect, useState } from "react";
 
 type Theme = "dark" | "light";
+type ThemeState = {
+  theme: Theme;
+  hasExplicitPreference: boolean;
+};
 
 const STORAGE_KEY = "devcard-theme";
 const THEME_ATTR = "data-theme";
@@ -19,34 +23,93 @@ function applyTheme(theme: Theme) {
   root.style.colorScheme = theme;
 }
 
+function safeStorageGet(key: string) {
+  try {
+    return window.localStorage.getItem(key);
+  } catch {
+    return null;
+  }
+}
+
+function safeStorageSet(key: string, value: string) {
+  try {
+    window.localStorage.setItem(key, value);
+  } catch {
+    // Ignore storage write failures (private mode, blocked storage, etc.).
+  }
+}
+
+function safeStorageRemove(key: string) {
+  try {
+    window.localStorage.removeItem(key);
+  } catch {
+    // Ignore storage remove failures.
+  }
+}
+
+function getInitialThemeState(): ThemeState {
+  if (typeof window === "undefined") {
+    return {
+      theme: "dark",
+      hasExplicitPreference: false,
+    };
+  }
+
+  const savedTheme = safeStorageGet(STORAGE_KEY);
+  if (savedTheme === "dark" || savedTheme === "light") {
+    return {
+      theme: savedTheme,
+      hasExplicitPreference: true,
+    };
+  }
+
+  const currentAttr = document.documentElement.getAttribute(THEME_ATTR);
+  if (currentAttr === "dark" || currentAttr === "light") {
+    return {
+      theme: currentAttr,
+      hasExplicitPreference: false,
+    };
+  }
+
+  return {
+    theme: getSystemTheme(),
+    hasExplicitPreference: false,
+  };
+}
+
 export function ThemeToggle() {
-  const [mounted, setMounted] = useState(false);
-  const [theme, setTheme] = useState<Theme>("dark");
+  const [themeState, setThemeState] = useState(getInitialThemeState);
+  const theme = themeState.theme;
+  const nextThemeLabel = theme === "dark" ? "light" : "dark";
 
   useEffect(() => {
-    const savedTheme = localStorage.getItem(STORAGE_KEY);
-    const currentAttr = document.documentElement.getAttribute(THEME_ATTR);
+    applyTheme(theme);
 
-    const initialTheme: Theme =
-      savedTheme === "light" || savedTheme === "dark"
-        ? savedTheme
-        : currentAttr === "light" || currentAttr === "dark"
-          ? currentAttr
-          : getSystemTheme();
+    if (themeState.hasExplicitPreference) {
+      safeStorageSet(STORAGE_KEY, theme);
+    } else {
+      safeStorageRemove(STORAGE_KEY);
+    }
+  }, [theme, themeState.hasExplicitPreference]);
 
-    applyTheme(initialTheme);
-    setTheme(initialTheme);
-    setMounted(true);
-
+  useEffect(() => {
     const media = window.matchMedia("(prefers-color-scheme: light)");
     const handleSystemThemeChange = () => {
-      const persistedTheme = localStorage.getItem(STORAGE_KEY);
-      if (persistedTheme === "light" || persistedTheme === "dark") {
-        return;
-      }
-      const nextTheme = getSystemTheme();
-      applyTheme(nextTheme);
-      setTheme(nextTheme);
+      setThemeState((currentThemeState) => {
+        if (currentThemeState.hasExplicitPreference) {
+          return currentThemeState;
+        }
+
+        const nextTheme = getSystemTheme();
+        if (currentThemeState.theme === nextTheme) {
+          return currentThemeState;
+        }
+
+        return {
+          ...currentThemeState,
+          theme: nextTheme,
+        };
+      });
     };
 
     media.addEventListener("change", handleSystemThemeChange);
@@ -54,21 +117,22 @@ export function ThemeToggle() {
   }, []);
 
   const toggleTheme = () => {
-    const nextTheme: Theme = theme === "dark" ? "light" : "dark";
-    setTheme(nextTheme);
-    applyTheme(nextTheme);
-    localStorage.setItem(STORAGE_KEY, nextTheme);
+    setThemeState((currentThemeState) => ({
+      theme: currentThemeState.theme === "dark" ? "light" : "dark",
+      hasExplicitPreference: true,
+    }));
   };
 
   return (
     <button
       type="button"
       onClick={toggleTheme}
+      suppressHydrationWarning
       className="inline-flex h-9 items-center justify-center rounded-full border border-[var(--color-border)] bg-[var(--color-bg-secondary)] px-3 text-xs font-medium text-[var(--color-text-secondary)] transition-[background-color,color,border-color,transform] duration-150 ease-[var(--ease-smooth)] hover:-translate-y-px hover:bg-[var(--color-bg-tertiary)] hover:text-[var(--color-text-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-bg-primary)]"
-      aria-label={mounted ? `Switch to ${theme === "dark" ? "light" : "dark"} mode` : "Toggle color mode"}
-      title={mounted ? `Switch to ${theme === "dark" ? "light" : "dark"} mode` : "Toggle color mode"}
+      aria-label={`Switch to ${nextThemeLabel} mode`}
+      title={`Switch to ${nextThemeLabel} mode`}
     >
-      {mounted ? (theme === "dark" ? "Light" : "Dark") : "Theme"}
+      {theme === "dark" ? "Light" : "Dark"}
     </button>
   );
 }

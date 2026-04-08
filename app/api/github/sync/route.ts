@@ -14,6 +14,7 @@ import {
   type GitHubRepository,
 } from "@/lib/github/graphql";
 import { fetchRepoLanguages, fetchRepoStats } from "@/lib/github/rest";
+import type { GitHubSyncSuccessResponse } from "@/lib/github/sync-contract";
 
 export const dynamic = "force-dynamic";
 
@@ -22,6 +23,13 @@ const REPO_ENRICHMENT_CONCURRENCY = 4;
 const DEV_SYNC_SECRET_HEADER = "x-dev-sync-secret";
 const DEV_GITHUB_TOKEN_HEADER = "x-dev-github-token";
 const DEV_GITHUB_LOGIN_HEADER = "x-dev-github-login";
+
+// Template: add repositories you want to exclude from dashboard analytics.
+// Format is "owner/repository" in lowercase.
+// Example: "adamrzem/my-django-repo"
+const EXCLUDED_REPO_FULL_NAMES = new Set<string>([
+  "adamrzem/django4p2",
+]);
 
 type UniqueRepoEntry = {
   repository: GitHubRepository;
@@ -38,8 +46,25 @@ function hasValue(value?: string | null) {
   return Boolean(value && value.trim().length > 0);
 }
 
+function toRepoFullName(owner: string, repository: string) {
+  return `${owner}/${repository}`.toLowerCase();
+}
+
+function isAllowedDevBypassHost(hostHeader: string) {
+  return /^(localhost|127\.0\.0\.1|\[::1\])(?::\d+)?$/i.test(hostHeader.trim());
+}
+
 function getDevBypassContext(request: Request): SyncAuthContext | null {
-  if (process.env.NODE_ENV === "production") {
+  if (process.env.NODE_ENV !== "development") {
+    return null;
+  }
+
+  if (process.env.ENABLE_DEV_SYNC_BYPASS !== "true") {
+    return null;
+  }
+
+  const host = request.headers.get("host") ?? "";
+  if (!isAllowedDevBypassHost(host)) {
     return null;
   }
 
@@ -183,11 +208,18 @@ export async function POST(request: Request) {
     ]);
 
     const uniqueRepos = collectUniqueRepos(repoCollections.pinned, repoCollections.top);
-    const totalStarsAcrossCandidates = uniqueRepos.reduce(
+    const filteredRepos = uniqueRepos.filter(
+      (entry) =>
+        !EXCLUDED_REPO_FULL_NAMES.has(
+          toRepoFullName(entry.repository.ownerLogin, entry.repository.name),
+        ),
+    );
+
+    const totalStarsAcrossCandidates = filteredRepos.reduce(
       (sum, entry) => sum + entry.repository.stargazerCount,
       0,
     );
-    const reposToEnrich = uniqueRepos.slice(0, MAX_REPOS_FOR_ENRICHMENT);
+    const reposToEnrich = filteredRepos.slice(0, MAX_REPOS_FOR_ENRICHMENT);
     const enrichedRepos = await mapWithConcurrency(
       reposToEnrich,
       REPO_ENRICHMENT_CONCURRENCY,
@@ -205,18 +237,20 @@ export async function POST(request: Request) {
       totalStars: totalStarsAcrossCandidates,
     };
 
-    return NextResponse.json({
+    const payload: GitHubSyncSuccessResponse = {
       data: responseData,
       meta: {
         fetchedAt: new Date().toISOString(),
         githubLogin: username,
         authMode,
         enrichedRepoCount: reposToEnrich.length,
-        totalCandidateRepos: uniqueRepos.length,
-        repoEnrichmentCapped: uniqueRepos.length > MAX_REPOS_FOR_ENRICHMENT,
+        totalCandidateRepos: filteredRepos.length,
+        repoEnrichmentCapped: filteredRepos.length > MAX_REPOS_FOR_ENRICHMENT,
         enrichmentConcurrency: REPO_ENRICHMENT_CONCURRENCY,
       },
-    });
+    };
+
+    return NextResponse.json(payload);
   } catch (error) {
     if (error instanceof GitHubApiError) {
       if (error.status === 401) {
