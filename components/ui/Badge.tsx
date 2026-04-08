@@ -10,14 +10,14 @@ interface BadgeProps {
 
 const toneClasses: Record<BadgeTone, string> = {
   accent:
-    "border-[hsla(265_90%_65%_/_0.4)] bg-[hsla(265_90%_65%_/_0.15)] text-[hsl(265_95%_78%)]",
-  cyan: "border-[hsla(200_90%_60%_/_0.4)] bg-[hsla(200_90%_60%_/_0.15)] text-[hsl(200_92%_76%)]",
+    "border-[hsla(153_100%_69%_/_0.42)] bg-[hsla(153_100%_69%_/_0.14)] text-[hsl(153_96%_82%)]",
+  cyan: "border-[hsla(26_84%_56%_/_0.42)] bg-[hsla(26_84%_56%_/_0.14)] text-[hsl(28_94%_78%)]",
   success:
-    "border-[hsla(150_80%_55%_/_0.4)] bg-[hsla(150_80%_55%_/_0.14)] text-[hsl(150_84%_74%)]",
+    "border-[hsla(148_66%_49%_/_0.4)] bg-[hsla(148_66%_49%_/_0.14)] text-[hsl(148_74%_76%)]",
   neutral:
     "border-[var(--color-border)] bg-[var(--color-bg-secondary)] text-[var(--color-text-secondary)]",
   warning:
-    "border-[hsla(38_92%_60%_/_0.4)] bg-[hsla(38_92%_60%_/_0.13)] text-[hsl(38_96%_75%)]",
+    "border-[hsla(36_92%_60%_/_0.44)] bg-[hsla(36_92%_60%_/_0.15)] text-[hsl(38_96%_78%)]",
 };
 
 function cn(...parts: Array<string | undefined | false>) {

@@ -3,6 +3,7 @@ import Link from "next/link";
 
 import { auth, hasRequiredAuthEnv, signIn, signOut } from "@/auth";
 import { Button } from "@/components/ui/Button";
+import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { DEMO_PUBLIC_SLUG } from "@/lib/public/profiles";
 
 const navLinks = [
@@ -37,7 +38,7 @@ export async function Navbar() {
 
   return (
     <header className="fixed inset-x-0 top-0 z-50 px-4 py-4 sm:px-8">
-      <div className="mx-auto flex w-full max-w-6xl items-center justify-between rounded-full border border-[var(--color-border)] bg-[hsla(230_20%_10%_/_0.65)] px-3 py-2 shadow-[var(--shadow-card)] backdrop-blur-md sm:px-4">
+      <div className="mx-auto flex w-full max-w-6xl items-center justify-between rounded-full border border-[var(--color-border)] bg-[var(--color-bg-glass)] px-3 py-2 shadow-[var(--shadow-card)] backdrop-blur-md sm:px-4">
         <Link href="/" className="inline-flex items-center gap-2">
           <span className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-[var(--color-accent-soft)] text-xs font-bold tracking-[0.08em] text-[var(--color-accent)]">
             DC
@@ -60,6 +61,8 @@ export async function Navbar() {
         </nav>
 
         <div className="flex items-center gap-2">
+          <ThemeToggle />
+
           {isSignedIn ? (
             <>
               <div className="hidden items-center gap-2 rounded-full border border-[var(--color-border)] bg-[var(--color-bg-secondary)] px-3 py-1.5 sm:flex">

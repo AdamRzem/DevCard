@@ -55,14 +55,14 @@ export default function Home() {
                 <span className="gradient-text block"> recruiter-ready card</span>
               </h1>
 
-              <p className="animate-fade-in-up delay-100 max-w-2xl text-base leading-7 text-[var(--color-text-secondary)] sm:text-lg sm:leading-8">
+              <p className="animate-fade-in-up delay-70 max-w-2xl text-base leading-7 text-[var(--color-text-secondary)] sm:text-lg sm:leading-8">
                 DevCard converts contribution history, language trends, and top
                 repositories into a polished public profile you can share in one
                 link.
               </p>
             </div>
 
-            <div className="animate-fade-in-up delay-200 flex flex-wrap items-center gap-3">
+            <div className="animate-fade-in-up delay-140 flex flex-wrap items-center gap-3">
               {authReady ? (
                 <Button href="/api/auth/signin?callbackUrl=%2Fdashboard" size="lg">
                   Connect GitHub
@@ -85,7 +85,7 @@ export default function Home() {
               </Button>
             </div>
 
-            <div className="animate-fade-in-up delay-300 flex flex-wrap gap-2">
+            <div className="animate-fade-in-up delay-210 flex flex-wrap gap-2">
               <Badge tone="neutral">TypeScript</Badge>
               <Badge tone="neutral">Next.js 16</Badge>
               <Badge tone="neutral">Tailwind CSS 4</Badge>
@@ -132,8 +132,14 @@ export default function Home() {
               </div>
             </div>
 
-            <div className="animate-pulse-glow absolute -right-5 -top-5 hidden h-20 w-20 rounded-full bg-[hsla(200_90%_60%_/_0.2)] blur-2xl sm:block" />
-            <div className="animate-pulse-glow delay-300 absolute -bottom-7 -left-6 hidden h-24 w-24 rounded-full bg-[hsla(265_90%_65%_/_0.22)] blur-2xl sm:block" />
+            <div
+              className="animate-pulse-glow absolute -right-5 -top-5 hidden h-20 w-20 rounded-full blur-2xl sm:block"
+              style={{ backgroundColor: "var(--orb-signal)" }}
+            />
+            <div
+              className="animate-pulse-glow delay-210 absolute -bottom-7 -left-6 hidden h-24 w-24 rounded-full blur-2xl sm:block"
+              style={{ backgroundColor: "var(--orb-accent)" }}
+            />
           </div>
         </section>
 
@@ -166,7 +172,7 @@ export default function Home() {
               <article
                 key={item.title}
                 className="glass animate-fade-in-up rounded-2xl p-6 shadow-[var(--shadow-card)]"
-                style={{ animationDelay: `${index * 130}ms` }}
+                style={{ animationDelay: `${index * 70}ms` }}
               >
                 <p className="mb-3 text-xs font-semibold uppercase tracking-[0.14em] text-[var(--color-text-muted)]">
                   Step {index + 1}
