@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { auth } from "@/auth";
+import { saveUser } from "@/lib/aws/dynamodb";
 import {
   analyzeProfile,
   type AnalyzeProfileResult,
@@ -14,8 +15,12 @@ import {
   type GitHubRepository,
 } from "@/lib/github/graphql";
 import { fetchRepoLanguages, fetchRepoStats } from "@/lib/github/rest";
-import type { GitHubSyncSuccessResponse } from "@/lib/github/sync-contract";
+import type {
+  GitHubSyncPersistenceMeta,
+  GitHubSyncSuccessResponse,
+} from "@/lib/github/sync-contract";
 
+export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 const MAX_REPOS_FOR_ENRICHMENT = 12;
@@ -180,6 +185,7 @@ export async function POST(request: Request) {
   const session = devBypass ? null : await auth();
   const accessToken = devBypass?.accessToken ?? session?.accessToken;
   const username = devBypass?.username ?? session?.user?.githubLogin;
+  const githubId = devBypass ? undefined : session?.githubId;
   const authMode = devBypass?.authMode ?? "session";
 
   if (!accessToken) {
@@ -237,18 +243,88 @@ export async function POST(request: Request) {
       totalStars: totalStarsAcrossCandidates,
     };
 
+    const fetchedAt = new Date().toISOString();
+    let persistence: GitHubSyncPersistenceMeta | undefined;
+
+    if (authMode === "dev-bypass") {
+      persistence = {
+        status: "skipped",
+        reason: "Development bypass mode does not persist sync results.",
+      };
+    } else if (!githubId) {
+      persistence = {
+        status: "skipped",
+        reason: "GitHub account identifier is missing in session.",
+      };
+    } else if (profile.login.toLowerCase() !== username.toLowerCase()) {
+      persistence = {
+        status: "failed",
+        reason: "Fetched GitHub login does not match the authenticated session.",
+      };
+    } else {
+      try {
+        const saveResult = await saveUser({
+          githubId,
+          githubUsername: username,
+          displayName: profile.name,
+          avatarUrl: profile.avatarUrl,
+          bio: profile.bio,
+          company: profile.company,
+          location: profile.location,
+          githubData: responseData,
+          lastFetchedAt: fetchedAt,
+        });
+
+        persistence =
+          saveResult.status === "written"
+            ? {
+                status: "written",
+              }
+            : {
+                status: saveResult.status,
+                reason: saveResult.reason,
+              };
+      } catch (error) {
+        if (process.env.NODE_ENV === "production") {
+          console.error("GitHub sync persistence failed.", {
+            githubId,
+            githubUsername: username,
+            detail: toErrorMessage(error),
+          });
+        }
+
+        persistence = {
+          status: "failed",
+          reason:
+            process.env.NODE_ENV === "production"
+              ? "GitHub data was fetched but persistence failed."
+              : toErrorMessage(error),
+        };
+      }
+    }
+
     const payload: GitHubSyncSuccessResponse = {
       data: responseData,
       meta: {
-        fetchedAt: new Date().toISOString(),
+        fetchedAt,
         githubLogin: username,
         authMode,
         enrichedRepoCount: reposToEnrich.length,
         totalCandidateRepos: filteredRepos.length,
         repoEnrichmentCapped: filteredRepos.length > MAX_REPOS_FOR_ENRICHMENT,
         enrichmentConcurrency: REPO_ENRICHMENT_CONCURRENCY,
+        persistence,
       },
     };
+
+    if (persistence?.status === "failed" && process.env.NODE_ENV === "production") {
+      const responseBody =
+        {
+          error: "GitHub data fetched but persistence failed. Retry sync.",
+        };
+
+      return NextResponse.json(responseBody, { status: 503 });
+    }
 
     return NextResponse.json(payload);
   } catch (error) {
