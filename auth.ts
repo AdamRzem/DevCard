@@ -18,6 +18,19 @@ function hasValue(value?: string) {
   return normalized.length > 0 && !normalized.startsWith("MANUAL_REPLACE");
 }
 
+function readProfileLogin(profile: unknown) {
+  if (
+    profile &&
+    typeof profile === "object" &&
+    "login" in profile &&
+    typeof (profile as { login?: unknown }).login === "string"
+  ) {
+    return (profile as { login: string }).login;
+  }
+
+  return undefined;
+}
+
 export function hasRequiredAuthEnv() {
   return (
     hasValue(process.env.AUTH_SECRET) &&
@@ -35,6 +48,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         GitHub({
           clientId: process.env.AUTH_GITHUB_ID!,
           clientSecret: process.env.AUTH_GITHUB_SECRET!,
+          issuer: "https://github.com/login/oauth",
           authorization: {
             params: {
               scope: "read:user",
@@ -57,6 +71,48 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     strategy: "jwt",
   },
   callbacks: {
+    async signIn({ user, account, profile }) {
+      if (account?.provider !== "github") {
+        return true;
+      }
+
+      const profileLogin = readProfileLogin(profile);
+      const githubId =
+        (hasValue(account.providerAccountId) ? account.providerAccountId : undefined) ??
+        (typeof user.id === "string" && hasValue(user.id) ? user.id : undefined);
+      const githubUsername =
+        (hasValue(user.githubLogin) ? user.githubLogin : undefined) ??
+        (hasValue(profileLogin) ? profileLogin : undefined);
+
+      if (!githubId || !githubUsername) {
+        return true;
+      }
+
+      try {
+        const { saveUser } = await import("@/lib/aws/dynamodb");
+        await saveUser({
+          githubId,
+          githubUsername,
+          displayName: user.name ?? null,
+          email: user.email ?? null,
+          avatarUrl: user.avatarUrl ?? user.image ?? null,
+        });
+      } catch (error) {
+        const message = error instanceof Error ? error.message : "Unknown error";
+
+        if (process.env.NODE_ENV !== "production") {
+          console.warn("Auth bootstrap persistence skipped.", { message });
+        } else {
+          console.error("Auth bootstrap persistence failed.", {
+            githubId,
+            githubUsername,
+            message,
+          });
+        }
+      }
+
+      return true;
+    },
     async jwt({ token, account, profile, user }) {
       if (account) {
         token.accessToken = account.access_token;

@@ -1,5 +1,10 @@
 import type { AnalyzeProfileResult } from "@/lib/github/analyzer";
 
+export type GitHubSyncPersistenceMeta = {
+  status: "written" | "skipped" | "stale" | "failed";
+  reason?: string;
+};
+
 export type GitHubSyncMeta = {
   fetchedAt: string;
   githubLogin: string;
@@ -8,6 +13,7 @@ export type GitHubSyncMeta = {
   totalCandidateRepos: number;
   repoEnrichmentCapped: boolean;
   enrichmentConcurrency: number;
+  persistence?: GitHubSyncPersistenceMeta;
 };
 
 export type GitHubSyncSuccessResponse = {
