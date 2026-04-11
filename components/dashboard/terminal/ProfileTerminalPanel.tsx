@@ -228,7 +228,7 @@ export function ProfileTerminalPanel({ modeLabel }: ProfileTerminalPanelProps) {
       <div className="flex-1 overflow-y-auto p-4">
         <div
           className="border border-[var(--color-border-subtle)] bg-[color:rgb(0_0_0_/_.9)] p-3"
-          style={{ minHeight: modeLabel === "mobile" ? "720px" : "720px" }}
+          style={{ minHeight: "720px" }}
         >
           {lines.map((line, index) => {
             const isVisible = index < visibleLines;
