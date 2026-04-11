@@ -1,36 +1,39 @@
 import { redirect } from "next/navigation";
 
-import { auth } from "@/auth";
-import { Navbar } from "@/components/ui/Navbar";
+import { auth, signOut } from "@/auth";
+import { DashboardHudShell } from "@/components/dashboard/hud/DashboardHudShell";
 
 export default async function DashboardLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  async function signOutFromDashboard() {
+    "use server";
+
+    await signOut({ redirectTo: "/" });
+  }
+
   const session = await auth();
 
   if (!session?.user) {
     redirect("/");
   }
 
+  const displayName = session.user.githubLogin ?? session.user.name ?? "NODE_01";
+
   return (
-    <div className="relative min-h-screen overflow-x-clip">
+    <div className="relative min-h-screen overflow-x-hidden">
       <a
         href="#dashboard-content"
-        className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-[60] focus:rounded-full focus:border focus:border-[var(--color-border)] focus:bg-[var(--color-bg-secondary)] focus:px-4 focus:py-2 focus:text-sm"
+        className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-[80] focus:border focus:border-[var(--color-border)] focus:bg-[var(--color-bg-secondary)] focus:px-4 focus:py-2 focus:text-sm"
       >
         Skip to dashboard content
       </a>
 
-      <Navbar />
-
-      <main
-        id="dashboard-content"
-        className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-6 pb-16 pt-28 sm:px-10 lg:px-12"
-      >
+      <DashboardHudShell displayName={displayName} signOutAction={signOutFromDashboard}>
         {children}
-      </main>
+      </DashboardHudShell>
     </div>
   );
 }
