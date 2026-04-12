@@ -140,10 +140,12 @@ export async function getUserByUsername(
 ): Promise<UserRecord | null> {
   const db = createServerClient();
 
+  // Escape SQL wildcard characters to prevent pattern matching when using ilike.
+  const escapedUsername = username.replace(/[%_\\]/g, "\\$&");
   const { data, error } = await db
     .from("users")
     .select("*")
-    .ilike("github_username", username)
+    .ilike("github_username", escapedUsername)
     .single();
 
   if (error?.code === "PGRST116") return null;
@@ -189,7 +191,7 @@ export async function upsertCard(input: {
     .eq("slug", normalizedSlug)
     .single();
 
-  if (existingError?.code !== "PGRST116") {
+  if (existingError && existingError.code !== "PGRST116") {
     throw new Error(`upsertCard failed: ${existingError.message}`);
   }
 

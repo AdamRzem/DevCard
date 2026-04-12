@@ -14,12 +14,19 @@ as $$
 declare
   v_view_count integer;
 begin
-  update public.cards
-  set view_count = view_count + 1
-  where slug = lower(trim(p_slug))
-    and is_public = true
-  returning view_count into v_view_count;
+  update public.cards c
+  set view_count = c.view_count + 1
+  from public.users u
+  where c.user_id = u.id
+    and c.slug = lower(trim(p_slug))
+    and c.is_public = true
+    and u.is_public = true
+  returning c.view_count into v_view_count;
 
   return coalesce(v_view_count, 0);
 end;
 $$;
+
+-- Restrict execution to service_role only; revoke from PUBLIC.
+revoke execute on function public.increment_card_view_count(text) from public;
+grant execute on function public.increment_card_view_count(text) to service_role;
