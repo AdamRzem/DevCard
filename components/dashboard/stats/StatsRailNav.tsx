@@ -35,68 +35,52 @@ export function StatsRailNav({ sections }: StatsRailNavProps) {
 
     let observer: IntersectionObserver | null = null;
 
-    const setupObserver = () => {
-      const elements = sections
-        .map((section) => document.getElementById(section.id))
-        .filter((element): element is HTMLElement => Boolean(element));
+    const elements = sections
+      .map((section) => document.getElementById(section.id))
+      .filter((element): element is HTMLElement => Boolean(element));
 
-      if (elements.length === 0) {
-        return;
-      }
+    if (elements.length === 0) {
+      return;
+    }
 
-      observer?.disconnect();
+    const ratioMap = new Map<string, number>(
+      elements.map((element) => [element.id, 0]),
+    );
 
-      const ratioMap = new Map<string, number>(
-        elements.map((element) => [element.id, 0]),
-      );
+    observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          ratioMap.set(
+            entry.target.id,
+            entry.isIntersecting ? entry.intersectionRatio : 0,
+          );
+        }
 
-      observer = new IntersectionObserver(
-        (entries) => {
-          for (const entry of entries) {
-            ratioMap.set(
-              entry.target.id,
-              entry.isIntersecting ? entry.intersectionRatio : 0,
-            );
+        let maxRatio = 0;
+        let maxId = "";
+        for (const [id, ratio] of ratioMap) {
+          if (ratio > maxRatio) {
+            maxRatio = ratio;
+            maxId = id;
           }
+        }
 
-          let maxRatio = 0;
-          let maxId = "";
-          for (const [id, ratio] of ratioMap) {
-            if (ratio > maxRatio) {
-              maxRatio = ratio;
-              maxId = id;
-            }
-          }
+        if (maxRatio > 0) {
+          setActiveSectionId(maxId);
+        }
+      },
+      {
+        rootMargin: "-30% 0px -55% 0px",
+        threshold: [0.2, 0.45, 0.7],
+      },
+    );
 
-          if (maxRatio > 0) {
-            setActiveSectionId(maxId);
-          }
-        },
-        {
-          rootMargin: "-30% 0px -55% 0px",
-          threshold: [0.2, 0.45, 0.7],
-        },
-      );
-
-      for (const element of elements) {
-        observer.observe(element);
-      }
-    };
-
-    setupObserver();
-
-    const mutationObserver = new MutationObserver(() => {
-      setupObserver();
-    });
-
-    mutationObserver.observe(document.body, {
-      childList: true,
-      subtree: true,
-    });
+    for (const element of elements) {
+      observer.observe(element);
+    }
 
     return () => {
       observer?.disconnect();
-      mutationObserver.disconnect();
     };
   }, [sections]);
 

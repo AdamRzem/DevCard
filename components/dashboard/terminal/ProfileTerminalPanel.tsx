@@ -187,6 +187,7 @@ export function ProfileTerminalPanel({ modeLabel }: ProfileTerminalPanelProps) {
   const [visibleLines, setVisibleLines] = useState(0);
 
   useEffect(() => {
+    setVisibleLines(0);
     let active = true;
     let timeoutId: ReturnType<typeof setTimeout> | undefined;
 
