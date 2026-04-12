@@ -39,7 +39,7 @@ function getHeatColor(contributionCount: number, maxCount: number) {
 
   const intensity = Math.min(1, contributionCount / maxCount);
   const alpha = 0.24 + intensity * 0.7;
-  return `hsla(153, 100%, 69%, ${alpha.toFixed(3)})`;
+  return `hsla(135, 100%, 50%, ${alpha.toFixed(3)})`;
 }
 
 function getNextIndexByKey(key: string, currentIndex: number, cellCount: number) {
@@ -141,10 +141,10 @@ export function ContributionHeatmap({ weeks, totalContributions }: ContributionH
   };
 
   return (
-    <article className="glass rounded-3xl p-6 sm:p-7">
+    <article className="hud-panel p-6 sm:p-7">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 className="text-xl font-semibold tracking-tight">Contribution Activity</h2>
+          <h2 className="font-headline text-2xl font-semibold tracking-tight">Contribution Activity</h2>
           <p className="mt-1 text-sm text-[var(--color-text-secondary)]">
             {totalContributions.toLocaleString("en-US")} total contributions this year
           </p>
@@ -154,7 +154,7 @@ export function ContributionHeatmap({ weeks, totalContributions }: ContributionH
 
       <p
         aria-live="polite"
-        className="mt-4 rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-secondary)] px-3 py-2 text-sm text-[var(--color-text-secondary)]"
+        className="mt-4 border border-[var(--color-border)] bg-[var(--color-bg-secondary)] px-3 py-2 text-sm text-[var(--color-text-secondary)]"
       >
         {activeDayLabel}
       </p>
@@ -197,7 +197,7 @@ export function ContributionHeatmap({ weeks, totalContributions }: ContributionH
                     ref={(element) => {
                       cellRefs.current[linearIndex] = element;
                     }}
-                    className="animate-fade-in h-3.5 w-3.5 rounded-[3px] border border-[var(--color-border-subtle)] transition-[transform,filter] duration-150 ease-[var(--ease-smooth)] hover:-translate-y-px hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-1 focus-visible:ring-offset-[var(--color-bg-secondary)]"
+                    className="animate-fade-in h-3.5 w-3.5 border border-[var(--color-border-subtle)] transition-[transform,filter] duration-150 ease-[var(--ease-smooth)] hover:-translate-y-px hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-1 focus-visible:ring-offset-[var(--color-bg-secondary)]"
                     style={{
                       backgroundColor: getHeatColor(day.contributionCount, maxContributionCount),
                       animationDelay: reducedMotion ? undefined : `${delayMs}ms`,

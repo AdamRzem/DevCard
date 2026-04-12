@@ -14,6 +14,7 @@ import { StatCard } from "@/components/ui/StatCard";
 import { ContributionHeatmap } from "@/components/dashboard/ContributionHeatmap";
 import { LanguageChart } from "@/components/dashboard/LanguageChart";
 import { RepoCard } from "@/components/dashboard/RepoCard";
+import { CommitsPerDayChart } from "@/components/dashboard/stats/CommitsPerDayChart";
 
 const SYNC_CACHE_KEY_PREFIX = "devcard-dashboard-sync-cache";
 const SYNC_CACHE_TTL_MS = 5 * 60 * 1000;
@@ -265,17 +266,17 @@ export function DashboardAnalytics({ githubLogin }: DashboardAnalyticsProps) {
           {Array.from({ length: 4 }).map((_, index) => (
             <div
               key={`stats-skeleton-${index}`}
-              className="glass animate-pulse rounded-2xl p-5"
+              className="hud-panel animate-pulse p-5"
             >
-              <div className="h-4 w-24 rounded bg-[var(--color-bg-tertiary)]" />
-              <div className="mt-3 h-8 w-20 rounded bg-[var(--color-bg-tertiary)]" />
+              <div className="h-4 w-24 bg-[var(--color-bg-tertiary)]" />
+              <div className="mt-3 h-8 w-20 bg-[var(--color-bg-tertiary)]" />
             </div>
           ))}
         </div>
 
         <div className="grid gap-4 xl:grid-cols-2">
-          <div className="glass animate-pulse min-h-[320px] rounded-3xl" />
-          <div className="glass animate-pulse min-h-[320px] rounded-3xl" />
+          <div className="hud-panel animate-pulse min-h-[320px]" />
+          <div className="hud-panel animate-pulse min-h-[320px]" />
         </div>
       </section>
     );
@@ -283,9 +284,9 @@ export function DashboardAnalytics({ githubLogin }: DashboardAnalyticsProps) {
 
   if (!data) {
     return (
-      <section className="glass rounded-3xl p-6 sm:p-8">
+      <section className="hud-panel p-6 sm:p-8">
         <Badge tone="warning">Sync Error</Badge>
-        <h2 className="mt-4 text-2xl font-semibold tracking-tight">
+        <h2 className="mt-4 font-headline text-2xl font-semibold tracking-tight">
           Could not load GitHub analytics
         </h2>
         <p className="mt-3 max-w-2xl text-sm leading-7 text-[var(--color-text-secondary)]">
@@ -301,7 +302,7 @@ export function DashboardAnalytics({ githubLogin }: DashboardAnalyticsProps) {
             {loading ? "Retrying..." : "Retry Sync"}
           </Button>
           {errorStatus === 401 ? (
-            <Button href="/api/auth/signin?callbackUrl=%2Fdashboard" variant="secondary">
+            <Button href="/api/auth/signin?callbackUrl=%2Fdashboard%2Fstats" variant="secondary">
               Reconnect GitHub
             </Button>
           ) : null}
@@ -311,7 +312,7 @@ export function DashboardAnalytics({ githubLogin }: DashboardAnalyticsProps) {
   }
 
   return (
-    <section className="space-y-8">
+    <section className="space-y-7">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap items-center gap-2">
           <Badge tone="accent">Live GitHub Sync</Badge>
@@ -329,11 +330,11 @@ export function DashboardAnalytics({ githubLogin }: DashboardAnalyticsProps) {
       </div>
 
       {error ? (
-        <div className="rounded-xl border border-[hsla(36_92%_60%_/_0.42)] bg-[hsla(36_92%_60%_/_0.14)] px-3 py-2 text-sm text-[var(--color-text-secondary)]">
+        <div className="border border-[hsla(36_92%_60%_/_0.42)] bg-[hsla(36_92%_60%_/_0.14)] px-3 py-2 text-sm text-[var(--color-text-secondary)]">
           <p>{error}</p>
           {errorStatus === 401 ? (
             <div className="mt-3">
-              <Button href="/api/auth/signin?callbackUrl=%2Fdashboard" variant="secondary" size="sm">
+              <Button href="/api/auth/signin?callbackUrl=%2Fdashboard%2Fstats" variant="secondary" size="sm">
                 Reconnect GitHub
               </Button>
             </div>
@@ -341,41 +342,50 @@ export function DashboardAnalytics({ githubLogin }: DashboardAnalyticsProps) {
         </div>
       ) : null}
 
-      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4" id="overview" data-stats-section>
         <StatCard
           label="Contributions"
           value={data.totalContributions}
           icon="C"
+          className="rounded-none border border-[var(--color-border)] bg-[var(--color-bg-secondary)] shadow-[12px_12px_0_rgba(0,0,0,0.8)]"
         />
         <StatCard
           label="Public Repositories"
           value={data.publicRepos}
           icon="R"
+          className="rounded-none border border-[var(--color-border)] bg-[var(--color-bg-secondary)] shadow-[12px_12px_0_rgba(0,0,0,0.8)]"
         />
         <StatCard
           label="Top Repo Stars"
           value={data.totalStars}
           icon="S"
+          className="rounded-none border border-[var(--color-border)] bg-[var(--color-bg-secondary)] shadow-[12px_12px_0_rgba(0,0,0,0.8)]"
         />
         <StatCard
           label="Current Streak"
           value={data.streakData.current}
           suffix=" d"
           icon="Stk"
+          className="rounded-none border border-[var(--color-border)] bg-[var(--color-bg-secondary)] shadow-[12px_12px_0_rgba(0,0,0,0.8)]"
         />
       </section>
 
-      <section className="grid gap-4 xl:grid-cols-2">
+      <section className="scroll-mt-28" id="languages" data-stats-section>
+        <LanguageChart languages={data.topLanguages} />
+      </section>
+
+      <CommitsPerDayChart weeks={data.contributionCalendar} />
+
+      <section className="scroll-mt-28" id="contribution-heatmap" data-stats-section>
         <ContributionHeatmap
           weeks={data.contributionCalendar}
           totalContributions={data.totalContributions}
         />
-        <LanguageChart languages={data.topLanguages} />
       </section>
 
-      <section className="space-y-4">
+      <section className="scroll-mt-28 space-y-4" id="top-repositories" data-stats-section>
         <div className="flex items-center justify-between gap-3">
-          <h2 className="text-2xl font-semibold tracking-tight">Top Repositories</h2>
+          <h2 className="font-headline text-2xl font-semibold tracking-tight">Top Repositories</h2>
           <Button
             type="button"
             variant="secondary"
@@ -393,7 +403,7 @@ export function DashboardAnalytics({ githubLogin }: DashboardAnalyticsProps) {
             ))}
           </div>
         ) : (
-          <p className="rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-secondary)] px-4 py-3 text-sm text-[var(--color-text-secondary)]">
+          <p className="border border-[var(--color-border)] bg-[var(--color-bg-secondary)] px-4 py-3 text-sm text-[var(--color-text-secondary)]">
             No repositories available for summary yet.
           </p>
         )}

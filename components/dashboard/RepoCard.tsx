@@ -13,12 +13,12 @@ export function RepoCard({ repo, index }: RepoCardProps) {
       href={repo.url}
       target="_blank"
       rel="noopener noreferrer"
-      className="glass animate-fade-in-up block rounded-2xl p-5 transition-[transform,border-color,background-color] duration-150 ease-[var(--ease-smooth)] hover:-translate-y-px hover:border-[hsla(153_100%_69%_/_0.35)]"
+      className="animate-fade-in-up block border border-[var(--color-border)] bg-[var(--color-bg-secondary)] p-5 transition-[border-color,background-color] duration-100 ease-[var(--ease-smooth)] hover:border-[var(--color-accent)]"
       style={{ animationDelay: `${Math.min(index * 70, 350)}ms` }}
     >
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h3 className="text-lg font-semibold tracking-tight">{repo.name}</h3>
+          <h3 className="font-headline text-lg font-semibold tracking-tight">{repo.name}</h3>
           <p className="mt-1 text-xs uppercase tracking-[0.14em] text-[var(--color-text-muted)]">
             Impact Score {repo.impactScore.toFixed(1)}
           </p>

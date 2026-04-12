@@ -57,8 +57,8 @@ export function LanguageChart({ languages }: LanguageChartProps) {
   );
 
   return (
-    <article className="glass rounded-3xl p-6 sm:p-7">
-      <h2 className="text-xl font-semibold tracking-tight">Language Breakdown</h2>
+    <article className="hud-panel p-6 sm:p-7">
+      <h2 className="font-headline text-2xl font-semibold tracking-tight">Language Breakdown</h2>
       <p className="mt-1 text-sm text-[var(--color-text-secondary)]">
         Top languages from enriched repositories.
       </p>
@@ -97,13 +97,10 @@ export function LanguageChart({ languages }: LanguageChartProps) {
             languages.map((language) => (
               <div
                 key={language.name}
-                className="flex items-center justify-between rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-secondary)] px-3 py-2 text-sm"
+                className="flex items-center justify-between border border-[var(--color-border)] bg-[var(--color-bg-secondary)] px-3 py-2 text-sm"
               >
                 <span className="inline-flex items-center gap-2 text-[var(--color-text-secondary)]">
-                  <span
-                    className="h-2.5 w-2.5 rounded-full"
-                    style={{ backgroundColor: language.color }}
-                  />
+                  <span className="h-2.5 w-2.5" style={{ backgroundColor: language.color }} />
                   <span>{language.name}</span>
                 </span>
                 <span className="font-medium text-[var(--color-text-primary)]">
@@ -112,7 +109,7 @@ export function LanguageChart({ languages }: LanguageChartProps) {
               </div>
             ))
           ) : (
-            <p className="rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-secondary)] px-3 py-2 text-sm text-[var(--color-text-secondary)]">
+            <p className="border border-[var(--color-border)] bg-[var(--color-bg-secondary)] px-3 py-2 text-sm text-[var(--color-text-secondary)]">
               No language data available yet.
             </p>
           )}
