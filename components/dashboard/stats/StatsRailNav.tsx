@@ -45,14 +45,31 @@ export function StatsRailNav({ sections }: StatsRailNavProps) {
       }
 
       observer?.disconnect();
+
+      const ratioMap = new Map<string, number>(
+        elements.map((element) => [element.id, 0]),
+      );
+
       observer = new IntersectionObserver(
         (entries) => {
-          const visibleEntries = entries
-            .filter((entry) => entry.isIntersecting)
-            .sort((left, right) => right.intersectionRatio - left.intersectionRatio);
+          for (const entry of entries) {
+            ratioMap.set(
+              entry.target.id,
+              entry.isIntersecting ? entry.intersectionRatio : 0,
+            );
+          }
 
-          if (visibleEntries.length > 0) {
-            setActiveSectionId(visibleEntries[0].target.id);
+          let maxRatio = 0;
+          let maxId = "";
+          for (const [id, ratio] of ratioMap) {
+            if (ratio > maxRatio) {
+              maxRatio = ratio;
+              maxId = id;
+            }
+          }
+
+          if (maxRatio > 0) {
+            setActiveSectionId(maxId);
           }
         },
         {
