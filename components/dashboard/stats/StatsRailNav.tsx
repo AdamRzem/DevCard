@@ -15,6 +15,20 @@ export function StatsRailNav({ sections }: StatsRailNavProps) {
   const [activeSectionId, setActiveSectionId] = useState(sections[0]?.id ?? "");
 
   useEffect(() => {
+    setActiveSectionId((currentActiveSectionId) => {
+      if (sections.length === 0) {
+        return "";
+      }
+
+      if (sections.some((section) => section.id === currentActiveSectionId)) {
+        return currentActiveSectionId;
+      }
+
+      return sections[0].id;
+    });
+  }, [sections]);
+
+  useEffect(() => {
     if (sections.length === 0) {
       return;
     }
