@@ -49,7 +49,7 @@ export function CommitsPerDayChart({ weeks }: CommitsPerDayChartProps) {
   const peakValue = Math.max(...weekdayTotals, 1);
 
   return (
-    <article className="hud-panel p-6 sm:p-7" id="commits-per-day" data-stats-section>
+    <article className="hud-panel scroll-mt-28 p-6 sm:p-7" id="commits-per-day" data-stats-section>
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h2 className="font-headline text-2xl font-semibold tracking-tight">Commits Per Day</h2>
