@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { auth } from "@/auth";
-import { saveUser } from "@/lib/aws/dynamodb";
+import { upsertUser } from "@/lib/supabase/queries";
 import {
   analyzeProfile,
   type AnalyzeProfileResult,
@@ -263,7 +263,7 @@ export async function POST(request: Request) {
       };
     } else {
       try {
-        const saveResult = await saveUser({
+        await upsertUser({
           githubId,
           githubUsername: username,
           displayName: profile.name,
@@ -275,15 +275,9 @@ export async function POST(request: Request) {
           lastFetchedAt: fetchedAt,
         });
 
-        persistence =
-          saveResult.status === "written"
-            ? {
-                status: "written",
-              }
-            : {
-                status: saveResult.status,
-                reason: saveResult.reason,
-              };
+        persistence = {
+          status: "written",
+        };
       } catch (error) {
         if (process.env.NODE_ENV === "production") {
           console.error("GitHub sync persistence failed.", {

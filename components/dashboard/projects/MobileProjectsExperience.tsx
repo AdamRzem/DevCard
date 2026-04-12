@@ -262,17 +262,19 @@ function DesktopHud() {
         </div>
 
         <div className="relative mx-auto w-full" style={{ height: `${Math.max(scaledFrameHeight + 52, 920)}px` }}>
-          <div
-            className="absolute left-1/2 top-0 origin-top -translate-x-1/2"
-            style={{
-              width: `${activePreset.width}px`,
-              height: `${activePreset.height}px`,
-              transform: `translateX(-50%) scale(${viewportScale})`,
-            }}
-          >
-            <div className="h-full w-full rounded-[34px] border border-[var(--color-border)] bg-[color:rgb(0_0_0_/_0.92)] p-2">
-              <div className="h-full overflow-hidden rounded-[28px] border border-[var(--color-border)] bg-[var(--color-bg-secondary)]">
-                <MobileHudScene sceneId="mobile-scene" />
+          <div className="absolute inset-x-0 top-0 flex justify-center">
+            <div
+              className="origin-top"
+              style={{
+                width: `${activePreset.width}px`,
+                height: `${activePreset.height}px`,
+                transform: `scale(${viewportScale})`,
+              }}
+            >
+              <div className="h-full w-full rounded-[34px] border border-[var(--color-border)] bg-[color:rgb(0_0_0_/_0.92)] p-2">
+                <div className="h-full overflow-hidden rounded-[28px] border border-[var(--color-border)] bg-[var(--color-bg-secondary)]">
+                  <MobileHudScene sceneId="mobile-scene" />
+                </div>
               </div>
             </div>
           </div>
@@ -290,15 +292,6 @@ export function MobileProjectsExperience() {
   return (
     <section className="relative space-y-6 overflow-hidden">
       <ThreeDScene />
-
-      <div className="relative z-10 border border-[var(--color-border)] bg-[var(--color-bg-primary)] px-4 py-3">
-        <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-[var(--color-signal)]">
-          MOBILE_ARCHIVE
-        </p>
-        <h1 className="mt-2 font-headline text-5xl font-semibold tracking-tight text-[var(--color-text-primary)] lg:text-6xl">
-          ARCHITECTS_ARCHIVE
-        </h1>
-      </div>
 
       <section className="scroll-mt-28">
         <div className="lg:hidden">

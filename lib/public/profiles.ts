@@ -1,3 +1,5 @@
+import type { AnalyzeProfileResult } from "@/lib/github/analyzer";
+
 export interface PublicLanguageStat {
   name: string;
   percentage: number;
@@ -91,7 +93,62 @@ const profilesBySlug: Record<string, PublicProfile> = {
   },
 };
 
-export function getPublicProfileBySlug(slug: string): PublicProfile | null {
+/**
+ * Get a public profile by slug.
+ *
+ * Static demo slugs ("adam-dev", "adamrzem") always return hardcoded data so
+ * the landing page works even without a database connection.
+ *
+ * All other slugs query Supabase for real user data.
+ */
+export async function getPublicProfileBySlug(slug: string): Promise<PublicProfile | null> {
   const normalizedSlug = slug.toLowerCase();
-  return profilesBySlug[normalizedSlug] ?? null;
+
+  // Always serve static demo for known demo slugs
+  const staticProfile = profilesBySlug[normalizedSlug];
+  if (staticProfile) {
+    return staticProfile;
+  }
+
+  // Query Supabase for real user data
+  try {
+    const { getUserByUsername } = await import("@/lib/supabase/queries");
+    const user = await getUserByUsername(normalizedSlug);
+
+    if (!user || !user.is_public || !user.github_data) return null;
+
+    const data = user.github_data as AnalyzeProfileResult;
+
+    return {
+      slug: normalizedSlug,
+      displayName: user.display_name ?? user.github_username,
+      username: user.github_username,
+      title: "Developer",
+      location: user.location ?? "",
+      bio: user.bio ?? "",
+      totalContributions: data.totalContributions,
+      totalStars: data.totalStars,
+      publicRepos: data.publicRepos,
+      topLanguages: data.topLanguages,
+      topRepos: data.topRepos.slice(0, 3).map((r) => ({
+        name: r.name,
+        description: r.description,
+        stars: r.stars,
+        language: r.language,
+        languageColor: r.languageColor,
+        url: r.url,
+      })),
+      links: {
+        github: `https://github.com/${user.github_username}`,
+        resume: "",
+        contact: user.email ? `mailto:${user.email}` : "",
+      },
+    };
+  } catch (error) {
+    // In development, Supabase may not be configured — fall through to null
+    if (process.env.NODE_ENV !== "production") {
+      console.warn("Supabase profile lookup failed:", error instanceof Error ? error.message : error);
+    }
+    return null;
+  }
 }

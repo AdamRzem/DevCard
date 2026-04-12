@@ -23,8 +23,14 @@ export function DashboardHudShell({
   signOutAction,
 }: DashboardHudShellProps) {
   const pathname = usePathname();
-  const mode = pathname.endsWith("/web") ? "web" : pathname.endsWith("/mobile") ? "mobile" : "stats";
-  const isMobileScene = mode === "mobile";
+  const mode: "web" | "mobile" | "stats" | "editor" = pathname.endsWith("/web")
+    ? "web"
+    : pathname.endsWith("/mobile")
+      ? "mobile"
+      : pathname.endsWith("/editor")
+        ? "editor"
+        : "stats";
+  const isMobileScene = Boolean(mode === "mobile");
 
   return (
     <div className="hud-shell min-h-screen overflow-x-hidden">
@@ -76,6 +82,18 @@ export function DashboardHudShell({
               >
                 MOBILE
               </Link>
+              <Link
+                href="/dashboard/editor"
+                aria-current={mode === "editor" ? "page" : undefined}
+                className={cn(
+                  "border-b-2 pb-1 font-mono text-xs uppercase tracking-[0.16em] transition-colors duration-100",
+                  mode === "editor"
+                    ? "border-[var(--color-signal)] text-[var(--color-signal)]"
+                    : "border-transparent text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]",
+                )}
+              >
+                CARD_EDITOR
+              </Link>
             </nav>
           </div>
 
@@ -120,7 +138,10 @@ export function DashboardHudShell({
 
         {isMobileScene ? null : (
           <div className="hidden xl:block">
-            <ProfileTerminalPanel key={mode} modeLabel={mode} />
+            <ProfileTerminalPanel
+              key={mode}
+              modeLabel={mode === "editor" ? "stats" : mode}
+            />
           </div>
         )}
       </div>
@@ -157,13 +178,16 @@ export function DashboardHudShell({
         >
           MOBILE
         </Link>
-        <span
-          aria-disabled="true"
-          className="flex flex-col items-center justify-center font-mono text-[10px] uppercase tracking-[0.12em] text-[var(--color-text-muted)]"
-          title="Desktop terminal is available on wider screens"
+        <Link
+          href="/dashboard/editor"
+          aria-current={mode === "editor" ? "page" : undefined}
+          className={cn(
+            "flex flex-col items-center justify-center font-mono text-[10px] uppercase tracking-[0.12em] transition-colors duration-100",
+            mode === "editor" ? "text-[var(--color-signal)]" : "text-[var(--color-text-muted)]",
+          )}
         >
-          TERMINAL
-        </span>
+          EDITOR
+        </Link>
       </nav>
       )}
     </div>
