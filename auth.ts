@@ -89,8 +89,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       }
 
       try {
-        const { saveUser } = await import("@/lib/aws/dynamodb");
-        await saveUser({
+        const { upsertUser } = await import("@/lib/supabase/queries");
+        await upsertUser({
           githubId,
           githubUsername,
           displayName: user.name ?? null,

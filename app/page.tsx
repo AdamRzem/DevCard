@@ -89,7 +89,7 @@ export default function Home() {
               <Badge tone="neutral">TypeScript</Badge>
               <Badge tone="neutral">Next.js 16</Badge>
               <Badge tone="neutral">Tailwind CSS 4</Badge>
-              <Badge tone="neutral">AWS Ready</Badge>
+              <Badge tone="neutral">Supabase</Badge>
             </div>
           </div>
 

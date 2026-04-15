@@ -59,7 +59,7 @@ export async function generateMetadata({
 }: PublicProfilePageProps): Promise<Metadata> {
   const { slug } = await params;
   const normalizedSlug = normalizeSlug(slug);
-  const profile = getProfileCached(normalizedSlug);
+  const profile = await getProfileCached(normalizedSlug);
 
   if (!profile) {
     return {
@@ -89,7 +89,7 @@ export default async function PublicProfilePage({
     permanentRedirect(`/${encodeURIComponent(normalizedSlug)}${query}`);
   }
 
-  const profile = getProfileCached(normalizedSlug);
+  const profile = await getProfileCached(normalizedSlug);
 
   if (!profile) {
     notFound();

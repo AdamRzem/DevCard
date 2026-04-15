@@ -21,7 +21,7 @@ export const webProjects: DashboardProject[] = [
     githubUrl: "https://github.com/AdamRzem/dev-card",
     platform: "web",
     group: "featured",
-    tags: ["nextjs", "typescript", "aws"],
+    tags: ["nextjs", "typescript", "supabase"],
   },
   {
     id: "portfolio-web",

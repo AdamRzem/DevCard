@@ -25,11 +25,21 @@ const pageAnchors = {
     { id: "ai-diagnostics", label: "AI_DIAGNOSTICS" },
     { id: "intent-protocol", label: "INTENT_PROTOCOL" },
   ],
+  editor: [
+    { id: "card-editor-form", label: "CARD_EDITOR_FORM" },
+    { id: "card-editor-result", label: "PUBLISHED_CARD_DATA" },
+  ],
 } as const;
 
 export function DashboardLeftRail() {
   const pathname = usePathname();
-  const mode = pathname.endsWith("/web") ? "web" : pathname.endsWith("/mobile") ? "mobile" : "stats";
+  const mode = pathname.endsWith("/web")
+    ? "web"
+    : pathname.endsWith("/mobile")
+      ? "mobile"
+      : pathname.endsWith("/editor")
+        ? "editor"
+        : "stats";
 
   return (
     <aside className="hidden border-r border-[var(--color-border)] bg-[var(--color-bg-tertiary)] lg:flex lg:w-64 lg:flex-col">
