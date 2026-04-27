@@ -32,7 +32,7 @@ function buildExhibitLayout(projects: DashboardProject[]): ExhibitLayoutItem[] {
 
   return visibleProjects.map((project, index) => {
     const step = visibleProjects.length > 1 ? span / (visibleProjects.length - 1) : 0;
-    const angle = -span / 2 + index * step;
+    const angle = visibleProjects.length === 1 ? 0 : -span / 2 + index * step;
 
     return {
       project,
@@ -66,15 +66,17 @@ interface ProjectExhibitProps {
 
 function ProjectExhibit({ item, activeId, setActiveId }: ProjectExhibitProps) {
   const groupRef = useRef<Group>(null);
+  const elapsedRef = useRef(0);
   const isActive = item.project.id === activeId;
   const accent = groupColorMap[item.project.group];
 
-  useFrame((state) => {
+  useFrame((_, delta) => {
     if (!groupRef.current) {
       return;
     }
 
-    const lift = 0.08 + Math.sin(state.clock.getElapsedTime() * 1.3 + item.rotationY) * 0.05;
+    elapsedRef.current += delta;
+    const lift = 0.08 + Math.sin(elapsedRef.current * 1.3 + item.rotationY) * 0.05;
     groupRef.current.position.y = lift;
   });
 
@@ -100,7 +102,11 @@ function ProjectExhibit({ item, activeId, setActiveId }: ProjectExhibitProps) {
           event.stopPropagation();
           setActiveId(item.project.id);
         }}
-        onPointerOut={() => setActiveId(null)}
+        onPointerOut={() => {
+          if (activeId === item.project.id) {
+            setActiveId(null);
+          }
+        }}
         onClick={(event) => {
           event.stopPropagation();
           openProject();
@@ -218,7 +224,11 @@ export function ThreeDScene({ projects, sceneLabel = "MUSEUM_FLOOR", className }
                     : "border-[var(--color-border)] bg-[rgba(229,226,225,0.04)] hover:border-[var(--color-accent)]"
                 }`}
                 onMouseEnter={() => setActiveId(item.project.id)}
-                onMouseLeave={() => setActiveId(null)}
+                onMouseLeave={() => {
+                  if (activeId === item.project.id) {
+                    setActiveId(null);
+                  }
+                }}
               >
                 <p className="font-mono text-[10px] uppercase tracking-[0.12em] text-[var(--color-signal)]">
                   {item.project.codeName}
