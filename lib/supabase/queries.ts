@@ -1,4 +1,6 @@
+import { AnalyzeProfileResult } from "../github/analyzer";
 import { createServerClient } from "./client";
+import { getOwnerUsername } from "../portfolio/owner";
 
 // =====================
 // TYPES
@@ -48,6 +50,11 @@ export type PublicCardRecord = {
   card: CardRecord;
   owner: PublicCardOwnerRecord;
   imageUrl: string | null;
+};
+
+export type PortfolioData = {
+  user: UserRecord;
+  githubData: AnalyzeProfileResult;
 };
 
 function hasOwnField<T extends object, K extends string>(
@@ -151,6 +158,27 @@ export async function getUserByUsername(
   if (error?.code === "PGRST116") return null;
   if (error) throw new Error(`getUserByUsername failed: ${error.message}`);
   return data as UserRecord;
+}
+
+export async function getPortfolioData(
+  username = getOwnerUsername()
+): Promise<PortfolioData | null> {
+  const normalizedUsername = username.trim().toLowerCase();
+
+  if (!normalizedUsername) {
+    return null;
+  }
+
+  const user = await getUserByUsername(normalizedUsername);
+
+  if (!user || !user.github_data) {
+    return null;
+  }
+
+  return {
+    user,
+    githubData: user.github_data as AnalyzeProfileResult,
+  };
 }
 
 export async function incrementUserViewCount(
