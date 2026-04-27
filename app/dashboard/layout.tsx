@@ -17,7 +17,7 @@ export default async function DashboardLayout({
   const session = await auth();
 
   if (!session?.user) {
-    redirect("/");
+    redirect("/api/auth/signin?callbackUrl=%2Fdashboard%2Fstats");
   }
 
   const displayName = session.user.githubLogin ?? session.user.name ?? "NODE_01";

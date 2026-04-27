@@ -4,7 +4,10 @@ import { auth } from "@/auth";
 
 export default auth((request) => {
   if (!request.auth && request.nextUrl.pathname.startsWith("/dashboard")) {
-    return NextResponse.redirect(new URL("/", request.url));
+    const signInUrl = new URL("/api/auth/signin", request.url);
+    signInUrl.searchParams.set("callbackUrl", "/dashboard/stats");
+
+    return NextResponse.redirect(signInUrl);
   }
 
   return NextResponse.next();

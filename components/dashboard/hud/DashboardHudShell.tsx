@@ -82,18 +82,6 @@ export function DashboardHudShell({
               >
                 MOBILE
               </Link>
-              <Link
-                href="/dashboard/editor"
-                aria-current={mode === "editor" ? "page" : undefined}
-                className={cn(
-                  "border-b-2 pb-1 font-mono text-xs uppercase tracking-[0.16em] transition-colors duration-100",
-                  mode === "editor"
-                    ? "border-[var(--color-signal)] text-[var(--color-signal)]"
-                    : "border-transparent text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]",
-                )}
-              >
-                CARD_EDITOR
-              </Link>
             </nav>
           </div>
 

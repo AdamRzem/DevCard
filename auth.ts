@@ -1,6 +1,8 @@
 import NextAuth from "next-auth";
 import GitHub from "next-auth/providers/github";
 
+import { isOwnerUsername } from "./lib/portfolio/owner";
+
 type GitHubProfile = {
   id: number;
   login: string;
@@ -85,7 +87,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         (hasValue(profileLogin) ? profileLogin : undefined);
 
       if (!githubId || !githubUsername) {
-        return true;
+        return false;
+      }
+
+      if (!isOwnerUsername(githubUsername)) {
+        return false;
       }
 
       try {
