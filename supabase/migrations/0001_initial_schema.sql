@@ -14,7 +14,7 @@ create extension if not exists "pgcrypto";
 create table if not exists public.users (
   id              uuid primary key default gen_random_uuid(),
   github_id       text not null unique,
-  github_username text not null,
+  github_username text not null unique,
   display_name    text,
   avatar_url      text,
   bio             text,
@@ -52,10 +52,9 @@ create table if not exists public.cards (
 -- =====================
 -- INDEXES
 -- =====================
--- Fast slug lookups (replaces DynamoDB GSI)
-create index if not exists cards_slug_idx on public.cards(slug);
+-- cards_slug_idx is intentionally omitted: the UNIQUE constraint on slug already creates an index.
 create index if not exists cards_user_id_idx on public.cards(user_id);
-create index if not exists users_github_username_idx on public.users(github_username);
+-- users_github_username_idx is intentionally omitted: the UNIQUE constraint already creates an index.
 
 -- =====================
 -- ROW LEVEL SECURITY
@@ -100,10 +99,16 @@ create trigger cards_updated_at
 -- =====================
 -- Used by the public profile page to count recruiter views
 create or replace function public.increment_user_view_count(p_github_id text)
-returns void language plpgsql security definer as $$
+returns void language plpgsql security definer
+set search_path = public
+as $$
 begin
   update public.users
   set view_count = view_count + 1
   where github_id = p_github_id;
 end;
 $$;
+
+-- Restrict execution to service_role only (server-side calls); revoke from PUBLIC.
+revoke execute on function public.increment_user_view_count(text) from public;
+grant execute on function public.increment_user_view_count(text) to service_role;
