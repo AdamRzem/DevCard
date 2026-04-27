@@ -15,6 +15,11 @@ const statsSections: StatsRailSection[] = [
 ];
 
 const pageAnchors = {
+  gallery: [
+    { id: "gallery-main-hall", label: "MAIN_HALL" },
+    { id: "gallery-ai-wing", label: "AI_WING" },
+    { id: "gallery-lab", label: "EXPERIMENTAL_LAB" },
+  ],
   web: [
     { id: "web-featured", label: "FEATURED" },
     { id: "web-open-source", label: "OPEN_SOURCE" },
@@ -37,9 +42,11 @@ export function DashboardLeftRail() {
     ? "web"
     : pathname.endsWith("/mobile")
       ? "mobile"
-      : pathname.endsWith("/editor")
-        ? "editor"
-        : "stats";
+      : pathname.endsWith("/gallery")
+        ? "gallery"
+        : pathname.endsWith("/editor")
+          ? "editor"
+          : "stats";
 
   return (
     <aside className="hidden border-r border-[var(--color-border)] bg-[var(--color-bg-tertiary)] lg:flex lg:w-64 lg:flex-col">

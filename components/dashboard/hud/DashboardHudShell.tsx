@@ -23,14 +23,18 @@ export function DashboardHudShell({
   signOutAction,
 }: DashboardHudShellProps) {
   const pathname = usePathname();
-  const mode: "web" | "mobile" | "stats" | "editor" = pathname.endsWith("/web")
+  const mode: "gallery" | "web" | "mobile" | "stats" | "editor" = pathname.endsWith("/web")
     ? "web"
     : pathname.endsWith("/mobile")
       ? "mobile"
-      : pathname.endsWith("/editor")
-        ? "editor"
-        : "stats";
+      : pathname.endsWith("/gallery")
+        ? "gallery"
+        : pathname.endsWith("/editor")
+          ? "editor"
+          : "stats";
   const isMobileScene = Boolean(mode === "mobile");
+  const modeLabel: "stats" | "web" | "mobile" =
+    mode === "web" || mode === "mobile" ? mode : "stats";
 
   return (
     <div className="hud-shell min-h-screen overflow-x-hidden">
@@ -46,6 +50,18 @@ export function DashboardHudShell({
             </Link>
 
             <nav className="hidden items-center gap-6 md:flex" aria-label="Dashboard modes">
+              <Link
+                href="/dashboard/gallery"
+                aria-current={mode === "gallery" ? "page" : undefined}
+                className={cn(
+                  "border-b-2 pb-1 font-mono text-xs uppercase tracking-[0.16em] transition-colors duration-100",
+                  mode === "gallery"
+                    ? "border-[var(--color-signal)] text-[var(--color-signal)]"
+                    : "border-transparent text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]",
+                )}
+              >
+                GALLERY
+              </Link>
               <Link
                 href="/dashboard/stats"
                 aria-current={mode === "stats" ? "page" : undefined}
@@ -128,14 +144,26 @@ export function DashboardHudShell({
           <div className="hidden xl:block">
             <ProfileTerminalPanel
               key={mode}
-              modeLabel={mode === "editor" ? "stats" : mode}
+              modeLabel={modeLabel}
             />
           </div>
         )}
       </div>
 
       {isMobileScene ? null : (
-      <nav className="fixed inset-x-0 bottom-0 z-50 grid h-20 grid-cols-4 border-t border-[var(--color-border)] bg-[var(--color-bg-secondary)] lg:hidden">
+      <nav className="fixed inset-x-0 bottom-0 z-50 grid h-20 grid-cols-5 border-t border-[var(--color-border)] bg-[var(--color-bg-secondary)] lg:hidden">
+        <Link
+          href="/dashboard/gallery"
+          aria-current={mode === "gallery" ? "page" : undefined}
+          className={cn(
+            "flex flex-col items-center justify-center font-mono text-[10px] uppercase tracking-[0.12em] transition-colors duration-100",
+            mode === "gallery"
+              ? "text-[var(--color-signal)]"
+              : "text-[var(--color-text-muted)]",
+          )}
+        >
+          GALLERY
+        </Link>
         <Link
           href="/dashboard/stats"
           aria-current={mode === "stats" ? "page" : undefined}
