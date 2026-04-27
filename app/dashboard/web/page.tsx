@@ -1,4 +1,5 @@
 import { ProjectList } from "@/components/dashboard/projects/ProjectList";
+import { ThreeDScene } from "@/components/dashboard/projects/ThreeDScene";
 import { webProjects } from "@/lib/dashboard/projects";
 
 export default function DashboardWebPage() {
@@ -21,6 +22,8 @@ export default function DashboardWebPage() {
           repository for recruiter verification.
         </p>
       </header>
+
+      <ThreeDScene projects={webProjects} sceneLabel="WEB_GALLERY" />
 
       <ProjectList projects={webProjects} sectionPrefix="web" />
     </section>

@@ -189,7 +189,7 @@ export async function upsertCard(input: {
     .eq("slug", normalizedSlug)
     .single();
 
-  if (existingError?.code !== "PGRST116") {
+  if (existingError && existingError.code !== "PGRST116") {
     throw new Error(`upsertCard failed: ${existingError.message}`);
   }
 
