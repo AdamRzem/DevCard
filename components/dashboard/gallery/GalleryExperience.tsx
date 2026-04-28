@@ -100,6 +100,7 @@ function GalleryRoomPanel({
 
 export function GalleryExperience() {
   const [useFallback] = useState(() => !canRenderWebGL2() || isLowCoreDevice());
+  const [activeExhibitId, setActiveExhibitId] = useState<string | null>(null);
 
   const aiWingProjects = galleryProjects.filter((project) => project.room === "ai-wing");
   const labProjects = galleryProjects.filter(
@@ -107,7 +108,10 @@ export function GalleryExperience() {
   );
 
   return (
-    <section className="space-y-6">
+    <section
+      className="space-y-6"
+      data-active-exhibit-id={activeExhibitId ?? ""}
+    >
       <header className="hud-panel p-6 sm:p-8">
         <div className="flex items-center gap-3">
           <div className="h-2 w-2 bg-[var(--color-signal)]" />
@@ -144,7 +148,7 @@ export function GalleryExperience() {
               </p>
             </div>
 
-            <GalleryScene />
+            <GalleryScene onSelectExhibit={setActiveExhibitId} />
           </section>
 
           <GalleryRoomPanel id="gallery-ai-wing" label="AI_WING" projects={aiWingProjects} />
