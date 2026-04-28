@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState, useSyncExternalStore } from "react";
 
 import { GalleryFallback } from "@/components/dashboard/gallery/fallback/GalleryFallback";
 import { GalleryScene } from "@/components/dashboard/gallery/scene/GalleryScene";
@@ -25,6 +25,14 @@ function isLowCoreDevice() {
 
   const cores = navigator.hardwareConcurrency ?? 4;
   return cores <= 2;
+}
+
+function useHasHydrated() {
+  return useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false,
+  );
 }
 
 function GalleryRoomPanel({
@@ -99,8 +107,15 @@ function GalleryRoomPanel({
 }
 
 export function GalleryExperience() {
-  const [useFallback] = useState(() => !canRenderWebGL2() || isLowCoreDevice());
+  const hasHydrated = useHasHydrated();
   const [activeExhibitId, setActiveExhibitId] = useState<string | null>(null);
+  const useFallback = useMemo(() => {
+    if (!hasHydrated) {
+      return null;
+    }
+
+    return !canRenderWebGL2() || isLowCoreDevice();
+  }, [hasHydrated]);
 
   const aiWingProjects = galleryProjects.filter((project) => project.room === "ai-wing");
   const labProjects = galleryProjects.filter(
@@ -136,7 +151,16 @@ export function GalleryExperience() {
         </div>
       </header>
 
-      {useFallback ? (
+      {useFallback === null ? (
+        <section className="hud-panel p-6 sm:p-8">
+          <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-[var(--color-signal)]">
+            GALLERY_INIT: PROBING_WEBGL
+          </p>
+          <p className="mt-3 text-sm text-[var(--color-text-secondary)]">
+            Preparing gallery environment.
+          </p>
+        </section>
+      ) : useFallback ? (
         <GalleryFallback />
       ) : (
         <>
