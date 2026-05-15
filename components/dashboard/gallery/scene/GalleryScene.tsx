@@ -1,125 +1,103 @@
 "use client";
 
-import { OrbitControls } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
 import { PCFSoftShadowMap } from "three";
 
-import {
-  galleryProjects,
-  type GalleryProject,
-  type GalleryRoom,
-} from "@/components/dashboard/gallery/data/galleryProjects";
-import { ExhibitPedestal } from "@/components/dashboard/gallery/scene/ExhibitPedestal";
-import { GalleryEnvironment } from "@/components/dashboard/gallery/scene/GalleryEnvironment";
-type ExhibitLayoutItem = {
-  project: GalleryProject;
-  position: [number, number, number];
-  rotationY: number;
-};
+import { GalleryEnvironment } from "./GalleryEnvironment";
+import { GalleryCamera } from "./GalleryCamera";
+import { MuseumDoor } from "./MuseumDoor";
+import { ProjectRoom } from "./ProjectRoom";
+import { GithubStatsRoom } from "./GithubStatsRoom";
+import { DOOR_POSITIONS, HALL_CAMERA } from "./galleryLayout";
+import type { MuseumView } from "./galleryLayout";
+import { galleryProjects, roomMeta, type MuseumRoom } from "@/components/dashboard/gallery/data/galleryProjects";
 
-type GallerySceneProps = {
-  onSelectExhibit?: (id: string) => void;
-};
-
-const roomOrder: GalleryRoom[] = [
-  "main-hall",
-  "ai-wing",
-  "experimental-lab",
-  "archive",
-];
-
-const roomLayout: Record<GalleryRoom, { z: number; spacing: number }> = {
-  "main-hall": { z: 0, spacing: 3.6 },
-  "ai-wing": { z: -5.8, spacing: 2.8 },
-  "experimental-lab": { z: 5.8, spacing: 2.8 },
-  archive: { z: 8.6, spacing: 2.6 },
-};
-
-function buildRoomLayout(
-  projects: GalleryProject[],
-  room: GalleryRoom,
-): ExhibitLayoutItem[] {
-  if (projects.length === 0) {
-    return [];
-  }
-
-  const config = roomLayout[room];
-  const startX = -((projects.length - 1) * config.spacing) / 2;
-
-  return projects.map((project, index) => ({
-    project,
-    position: [startX + index * config.spacing, 0, config.z],
-    rotationY: 0,
-  }));
+interface GallerySceneProps {
+  view: MuseumView;
+  onEnterRoom: (room: MuseumRoom) => void;
+  onExitRoom: () => void;
+  onSelectProject: (id: string) => void;
 }
 
-function buildGalleryLayout(projects: GalleryProject[]): ExhibitLayoutItem[] {
-  return roomOrder.flatMap((room) =>
-    buildRoomLayout(
-      projects.filter((project) => project.room === room),
-      room,
-    ),
-  );
-}
+export function GalleryScene({ view, onEnterRoom, onExitRoom, onSelectProject }: GallerySceneProps) {
+  const rooms: MuseumRoom[] = ["web", "mobile", "github-stats"];
 
-function GallerySceneShell({
-  items,
-  onSelectExhibit,
-}: {
-  items: ExhibitLayoutItem[];
-  onSelectExhibit?: (id: string) => void;
-}) {
+  const roomProjects = view !== "hall"
+    ? galleryProjects.filter((p) => p.room === view)
+    : [];
+
   return (
-    <>
-      <GalleryEnvironment />
-      {items.map((item) => (
-        <ExhibitPedestal
-          key={item.project.id}
-          project={item.project}
-          position={item.position}
-          rotationY={item.rotationY}
-          onSelect={onSelectExhibit}
-        />
-      ))}
-      <OrbitControls
-        enablePan={false}
-        minDistance={5.4}
-        maxDistance={13.5}
-        minPolarAngle={Math.PI / 4}
-        maxPolarAngle={Math.PI / 2.1}
-      />
-    </>
-  );
-}
+    <div className="relative h-full w-full overflow-hidden">
+      <Canvas
+        camera={{ position: HALL_CAMERA.position, fov: 52 }}
+        dpr={[1, 1.5]}
+        shadows={{ type: PCFSoftShadowMap }}
+        gl={{ antialias: true }}
+      >
+        <GalleryCamera view={view} />
 
-export function GalleryScene({ onSelectExhibit }: GallerySceneProps) {
-  return (
-    <section className="hud-panel relative overflow-hidden">
-      <div className="pointer-events-none absolute inset-x-0 top-0 z-10 h-24 bg-[linear-gradient(180deg,rgba(5,5,5,0.84),transparent)]" />
+        {view === "hall" ? (
+          <>
+            <GalleryEnvironment />
+            {rooms.map((room) => (
+              <MuseumDoor
+                key={room}
+                position={DOOR_POSITIONS[room]}
+                label={roomMeta[room].doorLabel}
+                color={roomMeta[room].color}
+                onClick={() => onEnterRoom(room)}
+              />
+            ))}
+          </>
+        ) : view === "github-stats" ? (
+          <GithubStatsRoom onExit={onExitRoom} />
+        ) : (
+          <ProjectRoom
+            room={view}
+            projects={roomProjects}
+            onSelectProject={onSelectProject}
+            onExit={onExitRoom}
+          />
+        )}
+      </Canvas>
 
-      <header className="pointer-events-none absolute inset-x-0 top-0 z-20 flex items-center justify-between px-5 py-4 sm:px-6">
-        <div>
-          <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-[var(--color-signal)]">
-            GALLERY_HALL
-          </p>
-          <p className="mt-1 font-mono text-[10px] uppercase tracking-[0.12em] text-[var(--color-text-muted)]">
-            ORBIT // SHELL_ENVIRONMENT
+      {/* Room label overlay */}
+      {view !== "hall" && (
+        <div className="pointer-events-none absolute bottom-5 left-1/2 -translate-x-1/2">
+          <p
+            style={{
+              fontFamily: "Georgia, serif",
+              fontSize: "11px",
+              letterSpacing: "0.28em",
+              textTransform: "uppercase",
+              color: roomMeta[view].color,
+            }}
+          >
+            {roomMeta[view].label}
           </p>
         </div>
-      </header>
+      )}
 
-      <div className="h-[360px] sm:h-[420px] lg:h-[520px]">
-        <Canvas
-          camera={{ position: [0, 4, 9.2], fov: 46 }}
-          dpr={[1, 1.5]}
-          shadows={{ type: PCFSoftShadowMap }}
+      {/* Hall instruction overlay */}
+      {view === "hall" && (
+        <div className="pointer-events-none absolute bottom-5 left-1/2 -translate-x-1/2 text-center">
+          <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-[#c9a84c] opacity-70">
+            Click a door to enter
+          </p>
+        </div>
+      )}
+
+      {/* DOM back button — always clickable regardless of 3D raycaster */}
+      {view !== "hall" && (
+        <button
+          type="button"
+          onClick={onExitRoom}
+          className="absolute left-4 top-4 z-20 border border-[#c9a84c44] bg-[rgba(20,14,6,0.72)] px-3 py-1.5 transition-colors duration-150 hover:border-[#c9a84c] hover:bg-[rgba(30,20,8,0.88)]"
+          style={{ fontFamily: "Georgia, serif", fontSize: "11px", letterSpacing: "0.22em", color: "#c9a84c", textTransform: "uppercase" }}
         >
-          <GallerySceneShell
-            items={buildGalleryLayout(galleryProjects)}
-            onSelectExhibit={onSelectExhibit}
-          />
-        </Canvas>
-      </div>
-    </section>
+          ← Hall
+        </button>
+      )}
+    </div>
   );
 }

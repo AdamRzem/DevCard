@@ -4,18 +4,12 @@ import { motion, useReducedMotion } from "framer-motion";
 
 import {
   galleryProjects,
+  roomMeta,
   type GalleryProject,
-  type GalleryRoom,
+  type MuseumRoom,
 } from "@/components/dashboard/gallery/data/galleryProjects";
 
-const roomOrder: GalleryRoom[] = ["main-hall", "ai-wing", "experimental-lab", "archive"];
-
-const roomLabels: Record<GalleryRoom, { id: string; label: string }> = {
-  "main-hall": { id: "gallery-main-hall", label: "MAIN_HALL" },
-  "ai-wing": { id: "gallery-ai-wing", label: "AI_WING" },
-  "experimental-lab": { id: "gallery-lab", label: "EXPERIMENTAL_LAB" },
-  archive: { id: "gallery-archive", label: "ARCHIVE" },
-};
+const roomOrder: MuseumRoom[] = ["web", "mobile", "github-stats"];
 
 function GalleryFallbackCard({
   project,
@@ -84,27 +78,20 @@ function GalleryFallbackCard({
 }
 
 export function GalleryFallback() {
-  const reduceMotion = useReducedMotion();
+  const reduceMotion = useReducedMotion() ?? false;
 
   return (
     <div className="space-y-10">
       {roomOrder.map((room) => {
-        const roomProjects = galleryProjects.filter((project) => project.room === room);
-
-        if (roomProjects.length === 0) {
-          return null;
-        }
+        const roomProjects = galleryProjects.filter((p) => p.room === room);
+        if (roomProjects.length === 0) return null;
 
         return (
-          <section
-            key={room}
-            id={roomLabels[room].id}
-            className="space-y-4 scroll-mt-28"
-          >
+          <section key={room} className="space-y-4 scroll-mt-28">
             <div className="flex items-center gap-3">
               <div className="h-2 w-2 bg-[var(--color-signal)]" />
               <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-[var(--color-signal)]">
-                {roomLabels[room].label}
+                {roomMeta[room].label}
               </p>
             </div>
 
