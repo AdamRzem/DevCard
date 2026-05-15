@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 
-import { ThreeDScene } from "@/components/dashboard/projects/ThreeDScene";
+// import { ThreeDScene } from "@/components/dashboard/projects/ThreeDScene";
 import { mobileProjects } from "@/lib/dashboard/projects";
 
 interface DevicePreset {
@@ -292,7 +292,7 @@ function DesktopHud() {
 export function MobileProjectsExperience() {
   return (
     <section className="relative space-y-6 overflow-hidden">
-      <ThreeDScene projects={mobileProjects} sceneLabel="MOBILE_GALLERY" />
+      {/* <ThreeDScene projects={mobileProjects} sceneLabel="MOBILE_GALLERY" /> */}
 
       <section className="scroll-mt-28">
         <div className="lg:hidden">

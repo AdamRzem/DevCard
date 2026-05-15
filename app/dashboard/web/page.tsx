@@ -23,7 +23,7 @@ export default function DashboardWebPage() {
         </p>
       </header>
 
-      <ThreeDScene projects={webProjects} sceneLabel="WEB_GALLERY" />
+      {/* <ThreeDScene projects={webProjects} sceneLabel="WEB_GALLERY" /> */}
 
       <ProjectList projects={webProjects} sectionPrefix="web" />
     </section>
